@@ -1,0 +1,228 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "School workspace and administrator profile configuration",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Authenticated owner UID" },
+        "displayName": { "type": "string", "description": "Administrator display name" },
+        "email": { "type": "string", "description": "Google account email" },
+        "schoolName": { "type": "string", "description": "Institution name" },
+        "branchLocation": { "type": "string", "description": "School location" },
+        "activeRole": { "type": "string", "enum": ["Admin", "Staff", "Parent"], "description": "Active workspace role mode" },
+        "language": { "type": "string", "enum": ["en", "hi"], "description": "Preferred UI language" },
+        "academicYear": { "type": "string", "description": "Current academic session" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp on creation" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp on update" }
+      },
+      "required": ["userId", "schoolName", "branchLocation", "activeRole", "language", "academicYear", "createdAt", "updatedAt"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Student record from Anganwadi through Class 8 and JNV",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "fatherName": { "type": "string" },
+        "motherName": { "type": "string" },
+        "className": {
+          "type": "string",
+          "enum": ["Anganwadi", "Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8", "JNV"]
+        },
+        "rollNumber": { "type": "string" },
+        "dob": { "type": "string" },
+        "gender": { "type": "string", "enum": ["Boy", "Girl", "Other"] },
+        "village": { "type": "string" },
+        "address": { "type": "string" },
+        "parentMobile": { "type": "string" },
+        "admissionDate": { "type": "string" },
+        "photoBase64": { "type": "string" },
+        "jnvTargetStream": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "className", "rollNumber", "gender", "createdAt", "updatedAt"]
+    },
+    "AttendanceRecord": {
+      "title": "AttendanceRecord",
+      "description": "Date-wise student attendance record",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "date": { "type": "string" },
+        "className": {
+          "type": "string",
+          "enum": ["Anganwadi", "Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8", "JNV"]
+        },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "rollNumber": { "type": "string" },
+        "status": { "type": "string", "enum": ["PRESENT", "ABSENT", "HOLIDAY"] },
+        "remarks": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "date", "className", "studentId", "studentName", "status", "createdAt", "updatedAt"]
+    },
+    "TestRecord": {
+      "title": "TestRecord",
+      "description": "Student test and examination result record",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "className": {
+          "type": "string",
+          "enum": ["Anganwadi", "Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8", "JNV"]
+        },
+        "subject": { "type": "string" },
+        "testTitle": { "type": "string" },
+        "testType": {
+          "type": "string",
+          "enum": ["Regular", "Unit Test", "Mid-Term", "Final", "JNV Subject Test", "JNV Mock Test", "JNV Entrance Prep"]
+        },
+        "testDate": { "type": "string" },
+        "totalMarks": { "type": "number" },
+        "obtainedMarks": { "type": "number" },
+        "percentage": { "type": "number" },
+        "grade": { "type": "string" },
+        "passed": { "type": "boolean" },
+        "remarks": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "studentId", "studentName", "className", "subject", "testTitle", "testType", "testDate", "totalMarks", "obtainedMarks", "percentage", "grade", "passed", "createdAt", "updatedAt"]
+    },
+    "BookItem": {
+      "title": "BookItem",
+      "description": "School textbook and library inventory item",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "bookName": { "type": "string" },
+        "className": { "type": "string" },
+        "subject": { "type": "string" },
+        "author": { "type": "string" },
+        "publisher": { "type": "string" },
+        "quantity": { "type": "integer" },
+        "distributed": { "type": "integer" },
+        "purchaseDate": { "type": "string" },
+        "photoBase64": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "bookName", "className", "subject", "quantity", "distributed", "createdAt", "updatedAt"]
+    },
+    "StationeryItem": {
+      "title": "StationeryItem",
+      "description": "Educational stationery and toys inventory item",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "itemName": { "type": "string" },
+        "category": { "type": "string" },
+        "details": { "type": "string" },
+        "quantity": { "type": "integer" },
+        "distributed": { "type": "integer" },
+        "purchasePrice": { "type": "number" },
+        "purchaseDate": { "type": "string" },
+        "photoBase64": { "type": "string" },
+        "stockHistorySummary": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "itemName", "category", "quantity", "distributed", "purchasePrice", "createdAt", "updatedAt"]
+    },
+    "NoticeItem": {
+      "title": "NoticeItem",
+      "description": "Important notice or announcement for staff, parents, and students",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "targetAudience": { "type": "string", "enum": ["All", "Teachers", "Parents", "Students"] },
+        "priority": { "type": "string", "enum": ["Normal", "Urgent"] },
+        "dateStr": { "type": "string" },
+        "authorName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "message", "targetAudience", "priority", "dateStr", "authorName", "createdAt", "updatedAt"]
+    },
+    "ActivityLog": {
+      "title": "ActivityLog",
+      "description": "Recent school activity and stock audit log",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["STUDENT", "ATTENDANCE", "TEST", "BOOK", "STATIONERY", "NOTICE", "BACKUP"] },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "dateTimeLabel": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "type", "title", "dateTimeLabel", "createdAt", "updatedAt"]
+    },
+    "StaffParentMember": {
+      "title": "StaffParentMember",
+      "description": "Staff or parent role assignment record",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["Admin", "Staff", "Parent"] },
+        "phone": { "type": "string" },
+        "assignedClass": { "type": "string" },
+        "linkedStudentId": { "type": "string" },
+        "accessPin": { "type": "string" },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "role", "active", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "School workspace profile and settings for the authenticated user"
+    },
+    "/users/{userId}/students/{studentId}": {
+      "schema": { "$ref": "#/entities/Student" },
+      "description": "Students enrolled from Anganwadi to Class 8 and JNV"
+    },
+    "/users/{userId}/attendance/{attendanceId}": {
+      "schema": { "$ref": "#/entities/AttendanceRecord" },
+      "description": "Daily student attendance records"
+    },
+    "/users/{userId}/tests/{testId}": {
+      "schema": { "$ref": "#/entities/TestRecord" },
+      "description": "Class and JNV test and examination results"
+    },
+    "/users/{userId}/books/{bookId}": {
+      "schema": { "$ref": "#/entities/BookItem" },
+      "description": "School books inventory and distribution records"
+    },
+    "/users/{userId}/stationery/{itemId}": {
+      "schema": { "$ref": "#/entities/StationeryItem" },
+      "description": "Educational stationery and toys inventory"
+    },
+    "/users/{userId}/notices/{noticeId}": {
+      "schema": { "$ref": "#/entities/NoticeItem" },
+      "description": "Important administrative announcements"
+    },
+    "/users/{userId}/activities/{activityId}": {
+      "schema": { "$ref": "#/entities/ActivityLog" },
+      "description": "Recent activity and stock history feed"
+    },
+    "/users/{userId}/members/{memberId}": {
+      "schema": { "$ref": "#/entities/StaffParentMember" },
+      "description": "Staff and parent role-based access records"
+    }
+  }
+}

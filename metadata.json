@@ -1,0 +1,6 @@
+{
+  "name": "Parivar Education Management System",
+  "description": "Complete Education Management System for Parivar Education Society, Chikalpat, managing students, attendance, exams, JNV preparation, books, stationery, and reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

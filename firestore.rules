@@ -1,0 +1,298 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidClassName(cls) {
+      return cls in ['Anganwadi', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'JNV'];
+    }
+
+    function isOptionalString(data, key, maxLen) {
+      return !(key in data) || (data[key] is string && data[key].size() <= maxLen);
+    }
+
+    function isValidTimestampsOnCreate(data) {
+      return data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidTimestampsOnUpdate(data) {
+      return data.createdAt == existing().createdAt &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.schoolName is string && data.schoolName.size() >= 1 && data.schoolName.size() <= 120 &&
+             data.branchLocation is string && data.branchLocation.size() >= 1 && data.branchLocation.size() <= 120 &&
+             data.activeRole in ['Admin', 'Staff', 'Parent'] &&
+             data.language in ['en', 'hi'] &&
+             data.academicYear is string && data.academicYear.size() >= 1 && data.academicYear.size() <= 20 &&
+             isOptionalString(data, 'displayName', 100) &&
+             isOptionalString(data, 'email', 150);
+    }
+
+    function isValidStudent(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+             isValidClassName(data.className) &&
+             data.rollNumber is string && data.rollNumber.size() >= 1 && data.rollNumber.size() <= 30 &&
+             data.gender in ['Boy', 'Girl', 'Other'] &&
+             isOptionalString(data, 'fatherName', 100) &&
+             isOptionalString(data, 'motherName', 100) &&
+             isOptionalString(data, 'dob', 20) &&
+             isOptionalString(data, 'village', 100) &&
+             isOptionalString(data, 'address', 300) &&
+             isOptionalString(data, 'parentMobile', 20) &&
+             isOptionalString(data, 'admissionDate', 20) &&
+             isOptionalString(data, 'photoBase64', 120000) &&
+             isOptionalString(data, 'jnvTargetStream', 60);
+    }
+
+    function isValidAttendance(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.date is string && data.date.size() >= 8 && data.date.size() <= 15 &&
+             isValidClassName(data.className) &&
+             data.studentId is string && data.studentId.size() >= 1 && data.studentId.size() <= 128 &&
+             data.studentName is string && data.studentName.size() >= 1 && data.studentName.size() <= 100 &&
+             data.status in ['PRESENT', 'ABSENT', 'HOLIDAY'] &&
+             isOptionalString(data, 'rollNumber', 30) &&
+             isOptionalString(data, 'remarks', 200);
+    }
+
+    function isValidTestRecord(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.studentId is string && data.studentId.size() >= 1 && data.studentId.size() <= 128 &&
+             data.studentName is string && data.studentName.size() >= 1 && data.studentName.size() <= 100 &&
+             isValidClassName(data.className) &&
+             data.subject is string && data.subject.size() >= 1 && data.subject.size() <= 80 &&
+             data.testTitle is string && data.testTitle.size() >= 1 && data.testTitle.size() <= 120 &&
+             data.testType in ['Regular', 'Unit Test', 'Mid-Term', 'Final', 'JNV Subject Test', 'JNV Mock Test', 'JNV Entrance Prep'] &&
+             data.testDate is string && data.testDate.size() >= 8 && data.testDate.size() <= 15 &&
+             data.totalMarks is number && data.totalMarks > 0 && data.totalMarks <= 10000 &&
+             data.obtainedMarks is number && data.obtainedMarks >= 0 && data.obtainedMarks <= data.totalMarks &&
+             data.percentage is number && data.percentage >= 0 && data.percentage <= 100 &&
+             data.grade is string && data.grade.size() >= 1 && data.grade.size() <= 10 &&
+             data.passed is bool &&
+             isOptionalString(data, 'remarks', 250);
+    }
+
+    function isValidBook(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.bookName is string && data.bookName.size() >= 1 && data.bookName.size() <= 120 &&
+             data.className is string && data.className.size() >= 1 && data.className.size() <= 40 &&
+             data.subject is string && data.subject.size() >= 1 && data.subject.size() <= 80 &&
+             data.quantity is int && data.quantity >= 0 && data.quantity <= 100000 &&
+             data.distributed is int && data.distributed >= 0 && data.distributed <= data.quantity &&
+             isOptionalString(data, 'author', 100) &&
+             isOptionalString(data, 'publisher', 100) &&
+             isOptionalString(data, 'purchaseDate', 20) &&
+             isOptionalString(data, 'photoBase64', 120000);
+    }
+
+    function isValidStationery(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.itemName is string && data.itemName.size() >= 1 && data.itemName.size() <= 120 &&
+             data.category is string && data.category.size() >= 1 && data.category.size() <= 60 &&
+             data.quantity is int && data.quantity >= 0 && data.quantity <= 100000 &&
+             data.distributed is int && data.distributed >= 0 && data.distributed <= data.quantity &&
+             data.purchasePrice is number && data.purchasePrice >= 0 && data.purchasePrice <= 10000000 &&
+             isOptionalString(data, 'details', 300) &&
+             isOptionalString(data, 'purchaseDate', 20) &&
+             isOptionalString(data, 'photoBase64', 120000) &&
+             isOptionalString(data, 'stockHistorySummary', 1000);
+    }
+
+    function isValidNotice(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 120 &&
+             data.message is string && data.message.size() >= 1 && data.message.size() <= 1000 &&
+             data.targetAudience in ['All', 'Teachers', 'Parents', 'Students'] &&
+             data.priority in ['Normal', 'Urgent'] &&
+             data.dateStr is string && data.dateStr.size() >= 1 && data.dateStr.size() <= 30 &&
+             data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 80;
+    }
+
+    function isValidActivity(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.type in ['STUDENT', 'ATTENDANCE', 'TEST', 'BOOK', 'STATIONERY', 'NOTICE', 'BACKUP'] &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 120 &&
+             data.dateTimeLabel is string && data.dateTimeLabel.size() >= 1 && data.dateTimeLabel.size() <= 40 &&
+             isOptionalString(data, 'description', 300);
+    }
+
+    function isValidMember(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+             data.role in ['Admin', 'Staff', 'Parent'] &&
+             data.active is bool &&
+             isOptionalString(data, 'phone', 20) &&
+             isOptionalString(data, 'assignedClass', 40) &&
+             isOptionalString(data, 'linkedStudentId', 128) &&
+             isOptionalString(data, 'accessPin', 10);
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(userId) &&
+                       incoming().keys().hasAll(['userId', 'schoolName', 'branchLocation', 'activeRole', 'language', 'academicYear', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'displayName', 'email', 'schoolName', 'branchLocation', 'activeRole', 'language', 'academicYear', 'createdAt', 'updatedAt']) &&
+                       isValidTimestampsOnCreate(incoming()) &&
+                       isValidUserProfile(incoming(), userId);
+      allow update: if isOwner(userId) && isValidId(userId) &&
+                       incoming().userId == existing().userId &&
+                       isValidTimestampsOnUpdate(incoming()) &&
+                       isValidUserProfile(incoming(), userId) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'email', 'schoolName', 'branchLocation', 'activeRole', 'language', 'academicYear', 'updatedAt']);
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      match /students/{studentId} {
+        allow get: if isOwner(userId) && isValidId(studentId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(studentId) &&
+                         incoming().keys().hasAll(['userId', 'name', 'className', 'rollNumber', 'gender', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'name', 'fatherName', 'motherName', 'className', 'rollNumber', 'dob', 'gender', 'village', 'address', 'parentMobile', 'admissionDate', 'photoBase64', 'jnvTargetStream', 'createdAt', 'updatedAt']) &&
+                         isValidTimestampsOnCreate(incoming()) &&
+                         isValidStudent(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(studentId) &&
+                         incoming().userId == existing().userId &&
+                         isValidTimestampsOnUpdate(incoming()) &&
+                         isValidStudent(incoming(), userId) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['name', 'fatherName', 'motherName', 'className', 'rollNumber', 'dob', 'gender', 'village', 'address', 'parentMobile', 'admissionDate', 'photoBase64', 'jnvTargetStream', 'updatedAt']);
+        allow delete: if isOwner(userId) && isValidId(studentId);
+      }
+
+      match /attendance/{attendanceId} {
+        allow get: if isOwner(userId) && isValidId(attendanceId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(attendanceId) &&
+                         incoming().keys().hasAll(['userId', 'date', 'className', 'studentId', 'studentName', 'status', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'date', 'className', 'studentId', 'studentName', 'rollNumber', 'status', 'remarks', 'createdAt', 'updatedAt']) &&
+                         isValidTimestampsOnCreate(incoming()) &&
+                         isValidAttendance(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(attendanceId) &&
+                         incoming().userId == existing().userId &&
+                         isValidTimestampsOnUpdate(incoming()) &&
+                         isValidAttendance(incoming(), userId) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['date', 'className', 'studentId', 'studentName', 'rollNumber', 'status', 'remarks', 'updatedAt']);
+        allow delete: if isOwner(userId) && isValidId(attendanceId);
+      }
+
+      match /tests/{testId} {
+        allow get: if isOwner(userId) && isValidId(testId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(testId) &&
+                         incoming().keys().hasAll(['userId', 'studentId', 'studentName', 'className', 'subject', 'testTitle', 'testType', 'testDate', 'totalMarks', 'obtainedMarks', 'percentage', 'grade', 'passed', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'studentId', 'studentName', 'className', 'subject', 'testTitle', 'testType', 'testDate', 'totalMarks', 'obtainedMarks', 'percentage', 'grade', 'passed', 'remarks', 'createdAt', 'updatedAt']) &&
+                         isValidTimestampsOnCreate(incoming()) &&
+                         isValidTestRecord(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(testId) &&
+                         incoming().userId == existing().userId &&
+                         isValidTimestampsOnUpdate(incoming()) &&
+                         isValidTestRecord(incoming(), userId) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['studentId', 'studentName', 'className', 'subject', 'testTitle', 'testType', 'testDate', 'totalMarks', 'obtainedMarks', 'percentage', 'grade', 'passed', 'remarks', 'updatedAt']);
+        allow delete: if isOwner(userId) && isValidId(testId);
+      }
+
+      match /books/{bookId} {
+        allow get: if isOwner(userId) && isValidId(bookId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(bookId) &&
+                         incoming().keys().hasAll(['userId', 'bookName', 'className', 'subject', 'quantity', 'distributed', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'bookName', 'className', 'subject', 'author', 'publisher', 'quantity', 'distributed', 'purchaseDate', 'photoBase64', 'createdAt', 'updatedAt']) &&
+                         isValidTimestampsOnCreate(incoming()) &&
+                         isValidBook(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(bookId) &&
+                         incoming().userId == existing().userId &&
+                         isValidTimestampsOnUpdate(incoming()) &&
+                         isValidBook(incoming(), userId) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['bookName', 'className', 'subject', 'author', 'publisher', 'quantity', 'distributed', 'purchaseDate', 'photoBase64', 'updatedAt']);
+        allow delete: if isOwner(userId) && isValidId(bookId);
+      }
+
+      match /stationery/{itemId} {
+        allow get: if isOwner(userId) && isValidId(itemId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(itemId) &&
+                         incoming().keys().hasAll(['userId', 'itemName', 'category', 'quantity', 'distributed', 'purchasePrice', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'itemName', 'category', 'details', 'quantity', 'distributed', 'purchasePrice', 'purchaseDate', 'photoBase64', 'stockHistorySummary', 'createdAt', 'updatedAt']) &&
+                         isValidTimestampsOnCreate(incoming()) &&
+                         isValidStationery(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(itemId) &&
+                         incoming().userId == existing().userId &&
+                         isValidTimestampsOnUpdate(incoming()) &&
+                         isValidStationery(incoming(), userId) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['itemName', 'category', 'details', 'quantity', 'distributed', 'purchasePrice', 'purchaseDate', 'photoBase64', 'stockHistorySummary', 'updatedAt']);
+        allow delete: if isOwner(userId) && isValidId(itemId);
+      }
+
+      match /notices/{noticeId} {
+        allow get: if isOwner(userId) && isValidId(noticeId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(noticeId) &&
+                         incoming().keys().hasAll(['userId', 'title', 'message', 'targetAudience', 'priority', 'dateStr', 'authorName', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'title', 'message', 'targetAudience', 'priority', 'dateStr', 'authorName', 'createdAt', 'updatedAt']) &&
+                         isValidTimestampsOnCreate(incoming()) &&
+                         isValidNotice(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(noticeId) &&
+                         incoming().userId == existing().userId &&
+                         isValidTimestampsOnUpdate(incoming()) &&
+                         isValidNotice(incoming(), userId) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['title', 'message', 'targetAudience', 'priority', 'dateStr', 'authorName', 'updatedAt']);
+        allow delete: if isOwner(userId) && isValidId(noticeId);
+      }
+
+      match /activities/{activityId} {
+        allow get: if isOwner(userId) && isValidId(activityId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(activityId) &&
+                         incoming().keys().hasAll(['userId', 'type', 'title', 'dateTimeLabel', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'type', 'title', 'description', 'dateTimeLabel', 'createdAt', 'updatedAt']) &&
+                         isValidTimestampsOnCreate(incoming()) &&
+                         isValidActivity(incoming(), userId);
+        allow update: if false;
+        allow delete: if isOwner(userId) && isValidId(activityId);
+      }
+
+      match /members/{memberId} {
+        allow get: if isOwner(userId) && isValidId(memberId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(memberId) &&
+                         incoming().keys().hasAll(['userId', 'name', 'role', 'active', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'name', 'role', 'phone', 'assignedClass', 'linkedStudentId', 'accessPin', 'active', 'createdAt', 'updatedAt']) &&
+                         isValidTimestampsOnCreate(incoming()) &&
+                         isValidMember(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(memberId) &&
+                         incoming().userId == existing().userId &&
+                         isValidTimestampsOnUpdate(incoming()) &&
+                         isValidMember(incoming(), userId) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['name', 'role', 'phone', 'assignedClass', 'linkedStudentId', 'accessPin', 'active', 'updatedAt']);
+        allow delete: if isOwner(userId) && isValidId(memberId);
+      }
+    }
+  }
+}
